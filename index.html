@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interaktivni atlas hrvatske akademske genealogije i doktorskih mentorstava.">
+  <title>Akademsko stablo Hrvatske</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#pocetna"><span>Akademsko stablo</span><small>Hrvatska akademska genealogija</small></a>
+  <button id="headerSearchButton" class="header-search-button" type="button" hidden>Nova pretraga</button>
+  <a class="method-link" href="#metoda">O podacima</a>
+</header>
+
+<main>
+  <section class="search-home" id="pocetna">
+    <div class="search-intro">
+      <p class="section-label">Digitalni znanstveni atlas</p>
+      <h1>Istražite akademske veze</h1>
+      <p>Pretražite osobe iz doktorskih radova i pratite njihove mentore, akademske srodnike i doktorande.</p>
+    </div>
+    <div class="search-module">
+      <label for="searchInput">Ime i prezime</label>
+      <div class="search-field"><input id="searchInput" type="search" autocomplete="off" placeholder="Upišite ime i prezime"><button id="searchButton" type="button">Pretraži</button></div>
+      <div id="searchResults" class="search-results" role="listbox" hidden></div>
+      <p class="search-help">Kod imenjaka odaberite profil prema godini, ustanovi i naslovu rada.</p>
+    </div>
+    <div class="corpus-stats" aria-label="Veličina zbirke"><span><b id="recordCount">—</b> radova</span><span><b id="peopleCount">—</b> osoba</span><span><b id="edgeCount">—</b> veza</span></div>
+  </section>
+
+  <section id="researchView" class="research-view" hidden>
+    <header class="person-bar">
+      <div><p id="personStatus" class="section-label"></p><h2 id="personName"></h2><p id="personContext"></p></div>
+      <div id="personCounts" class="person-counts"></div>
+    </header>
+
+    <nav class="view-tabs" role="tablist" aria-label="Istraživački prikazi">
+      <button id="tabGenealogy" role="tab" aria-selected="true" aria-controls="panelGenealogy" data-view="genealogy">Genealogija</button>
+      <button id="tabNetwork" role="tab" aria-selected="false" aria-controls="panelNetwork" data-view="network">Mreža zajednica</button>
+      <button id="tabWorks" role="tab" aria-selected="false" aria-controls="panelWorks" data-view="works">Doktorski radovi <span id="workTabCount"></span></button>
+    </nav>
+
+    <section id="panelGenealogy" class="view-panel genealogy-panel" role="tabpanel" aria-labelledby="tabGenealogy">
+      <div class="genealogy-workspace">
+        <div class="genealogy-main">
+          <div class="tree-toolbar" aria-label="Kontrole genealogije">
+            <div class="depth-control"><span>Preci</span><button type="button" data-depth="parents" data-step="-1" aria-label="Smanji broj generacija predaka">−</button><output id="parentDepth">1</output><button type="button" data-depth="parents" data-step="1" aria-label="Povećaj broj generacija predaka">+</button></div>
+            <div class="depth-control"><span>Potomci</span><button type="button" data-depth="children" data-step="-1" aria-label="Smanji broj generacija potomaka">−</button><output id="childDepth">1</output><button type="button" data-depth="children" data-step="1" aria-label="Povećaj broj generacija potomaka">+</button></div>
+            <label class="siblings-control"><input id="siblingsToggle" type="checkbox" checked><span>Akademska braća i sestre</span></label>
+            <label class="sibling-descendants-control"><span>Potomci akademske braće i sestara</span><select id="siblingDescendantDepth"><option value="0">Ne prikazuj</option><option value="1">1 generacija</option><option value="2">2 generacije</option><option value="3">3 generacije</option><option value="all">Sve dostupne generacije</option></select></label>
+            <div class="toolbar-spacer"></div>
+            <div class="relation-legend"><span><i></i> mentor</span><span><i class="co"></i> komentor</span></div>
+            <div class="tree-zoom-controls" role="group" aria-label="Zumiranje stabla"><button id="zoomOutButton" class="tool-button zoom-button" type="button" aria-label="Smanji stablo">−</button><button id="zoomResetButton" class="tool-button zoom-reset" type="button" aria-label="Prikaži stablo u stvarnoj veličini">100 %</button><button id="zoomInButton" class="tool-button zoom-button" type="button" aria-label="Povećaj stablo">+</button></div><button id="fitTreeButton" class="tool-button fit-button" type="button">Prilagodi prikaz</button>
+          </div>
+          <div id="treeViewport" class="tree-viewport"><svg id="treeCanvas" class="tree-canvas" role="img" aria-label="Akademsko genealoško stablo"></svg></div>
+          <p id="treeNote" class="tree-note"></p>
+        </div>
+        <aside id="personDetail" class="person-detail" aria-label="Profil odabrane osobe"></aside>
+      </div>
+    </section>
+
+    <section id="panelNetwork" class="view-panel network-panel" role="tabpanel" aria-labelledby="tabNetwork" hidden>
+      <header class="panel-intro"><div><p class="section-label">Izvedene veze</p><h3>Strukturne akademske zajednice</h3></div><p>Osobe su povezane kada dijele zabilježenog mentora ili su zajedno mentorirale isti doktorski rad. Ovaj pogled nije genealoško stablo.</p></header>
+      <div id="networkCanvas" class="network-canvas" aria-live="polite"></div>
+    </section>
+
+    <section id="panelWorks" class="view-panel works-panel" role="tabpanel" aria-labelledby="tabWorks" hidden>
+      <header class="panel-intro"><div><p class="section-label">Izvorni zapisi</p><h3>Doktorski radovi</h3></div><p>Bibliografski zapisi povezani s odabranim profilom. Osoba bez vlastitog zapisa može se pojavljivati samo kao mentor ili komentor.</p></header>
+      <div id="recordsView" class="records-view"></div>
+    </section>
+  </section>
+
+  <section class="method" id="metoda">
+    <div><p class="section-label">Metoda</p><h2>Što prikazuje ovaj atlas?</h2></div>
+    <div class="method-text"><p>Genealogija prikazuje izravne mentorske i komentorske odnose iz dvaju skupova doktorskih radova. Akademska braća i sestre dijele barem jednog zabilježenog mentora.</p><p>Mrežni pogled koristi izvedene veze zajedničkog mentora i zajedničkog mentorstva. Mrežni položaj nije mjera kvalitete, ugleda ni utjecaja.</p></div>
+  </section>
+</main>
+<footer><span>Akademsko stablo Hrvatske</span><span>Podatci iz digitalnih akademskih arhiva i repozitorija</span></footer>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>
